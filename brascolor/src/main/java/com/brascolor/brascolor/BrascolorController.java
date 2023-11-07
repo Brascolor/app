@@ -7,15 +7,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;  
 
-@RestController
+@Controller
 public class BrascolorController { 
   
     @GetMapping("/")
-    @RequestMapping(
-        method = {RequestMethod.GET},
-        value = {"/home"})
-    @ResponseBody 
     public String home() { 
-        return "home";
+        return "components/home.html";
     }
 }
