@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 
 @Controller
+
 public class BrascolorController {
 
     @Autowired
@@ -22,9 +23,21 @@ public class BrascolorController {
     @GetMapping("/login")
     public String login(@ModelAttribute("user") User user){
         if(user.isLoggedIn()){
-            return "redirect:/home"; 
+            return "redirect:/"; 
         }
-            return "components/login";
+        return "components/login";
+    }
+
+    @PostMapping("/login")
+    public String login(@ModelAttribute("email") String email, @RequestParam("password") String pwd, @ModelAttribute("user") User user){
+        if(user.isLoggedIn()){
+            return "redirect:/"; 
+        }
+        if(email.equals("admin@test.com") && pwd.equals("admin")){
+            user.setLoggedIn(true);
+            return "redirect:/"; 
+        }
+        return "components/login";
     }
 
     @GetMapping("/")
