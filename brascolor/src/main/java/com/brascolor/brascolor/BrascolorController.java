@@ -29,11 +29,11 @@ public class BrascolorController {
     }
 
     @PostMapping("/login")
-    public String login(@ModelAttribute("email") String email, @RequestParam("password") String pwd, @ModelAttribute("user") User user){
+    public String login(@RequestParam("idFunc") String username, @RequestParam("password") String pwd, @ModelAttribute("user") User user){
         if(user.isLoggedIn()){
             return "redirect:/"; 
         }
-        if(email.equals("admin@test.com") && pwd.equals("admin")){
+        if(username.equals("admin@test.com") && pwd.equals("admin")){
             user.setLoggedIn(true);
             return "redirect:/"; 
         }
