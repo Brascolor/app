@@ -33,7 +33,7 @@ public class BrascolorController {
         if(user.isLoggedIn()){
             return "redirect:/"; 
         }
-        if(username.equals("admin@test.com") && pwd.equals("admin")){
+        if(username.equals("123456") && pwd.equals("jefferson")){
             user.setLoggedIn(true);
             return "redirect:/"; 
         }
