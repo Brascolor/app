@@ -3,15 +3,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
-    <title>My Home Page</title>
+    <title>Brascolor</title>
   </head>
   <body>
-    <h1>Welcome to my website!</h1>
-    <p>Here you will find all sorts of interesting things.</p>
+    <h1>Bem vindo a Gráfica e Editora Brascolor!</h1>
+    <p>Escolha o que deseja fazer:</p>
     <ul>
-      <li><a th:href="@{/about}">About Me</a></li>
-      <li><a th:href="@{/blog}">My Blog</a></li>
-      <li><a th:href="@{/contact}">Contact Me</a></li>
+      <li><a th:href="@{/os}">Lançar Ordem de Serviço</a></li>
+      <li><a th:href="@{/viewos}">Ver Ordem(ns) de Serviço</a></li>
+      <li><a th:href="@{/changeos}">Alterar Ordem(ns) de Serviço</a></li>
+      <li><a th:href="@{/deleteos}">Deletar Ordem(ns) de Serviço</a></li>
     </ul>
+    <a th:href="@{/logout}">Logout</a> 
   </body>
 </html>
