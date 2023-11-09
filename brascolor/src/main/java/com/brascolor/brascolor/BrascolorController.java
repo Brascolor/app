@@ -66,13 +66,13 @@ public class BrascolorController {
         return "components/home";
     }
 
-    @PostMapping("/os")
-    public String os(){
+    // @PostMapping("/os")
+    // public String os(){
         
-    }
+    // }
 
-    @GetMapping("/os")
-    public String os() { 
-        return "components/os";
-    }
+    // @GetMapping("/os")
+    // public String os() { 
+    //     return "components/os";
+    // }
 }
