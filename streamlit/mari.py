@@ -42,12 +42,12 @@ def select_data(table):
     data = cursor.fetchall()
     return data
 
-def select_data(data):
-    query = f"SELECT calcular_creditos({data});"
-    cursor.execute(query)
-    query_result = cursor.fetchone()
-    valor = query_result[0]
-    return valor
+# def select_data(data):
+#     query = f"SELECT calcular_creditos({data});"
+#     cursor.execute(query)
+#     query_result = cursor.fetchone()
+#     valor = query_result[0]
+#     return valor
 
 #interface
 st.title("Aplicação de Gerenciamento de Dados")
