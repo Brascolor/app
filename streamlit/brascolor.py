@@ -5,7 +5,7 @@ import mysql.connector
 conn = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="mamae1010", #insira sua senha
+    password="", #insira sua senha
     database="brascolor"
 )
 
@@ -60,6 +60,12 @@ def filter_os():
     query_result = cursor.fetchall()
     return query_result
 
+def delete_eq(data):
+    query = f"DELETE FROM equipamento WHERE id = {data}"
+    cursor.execute(query)
+    conn.commit()
+    st.success(f'Ordem de serviço apagada.')
+
 #Interface
 st.title("Gráfica e Editora Brascolor")
 operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Apagar Ordem(ns) de Serviço", "Atualizar Ordem(ns) de Serviço"))
@@ -75,7 +81,7 @@ if operation == "Gerar Ordem de Serviço":
 
 
 if operation == "Visualizar Ordem(ns) de Serviço":
-    op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID da Ordem de Serviço", "Cliente", "Produto", "Data de Emissão", "Data de Consulta"))
+    op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "Cliente", "Produto", "Data de Emissão", "Data de Consulta"))
     if op_filter == "Ver todos":
         data = select_os()
         st.write("Ordens de Serviço:")
@@ -100,13 +106,13 @@ if operation == "Visualizar Ordem(ns) de Serviço":
         df = pd.DataFrame(data, columns=["ID", "Cliente", "CPF de quem gerou", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
         st.dataframe(df.set_index('ID'), width=800)
     elif op_filter == "Data de Emissão":
-        em_dt = st.date_input("Data de emissão")
+        em_dt = st.text_input("Data de emissão")
         data = select_os_dt_emissao(em_dt)
         st.write("Ordens de Serviço:")
         df = pd.DataFrame(data, columns=["ID", "Cliente", "CPF de quem gerou", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
         st.dataframe(df.set_index('ID'), width=800)
     elif op_filter == "Data de Consulta":
-        cons_dt = st.date_input("Data de consulta")
+        cons_dt = st.text_input("Data de consulta")
         data = select_os_dt_consulta(cons_dt)
         st.write("Ordens de Serviço:")
         df = pd.DataFrame(data, columns=["ID", "Cliente", "CPF de quem gerou", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
@@ -115,7 +121,7 @@ if operation == "Visualizar Ordem(ns) de Serviço":
 
 if operation == "Apagar Ordem de Serviço":
     if st.button("Apagar"):
-        delete_os()
+        delete_eq()
 
 
 if operation == "Atualizar Ordem de Serviço":
