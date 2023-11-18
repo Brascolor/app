@@ -157,7 +157,7 @@ if operation == "Apagar Ordem(ns) de Serviço":
 
 if operation == "Atualizar Material(is)":
     st.subheader("Atualizar Material(is)")
-    qty = st.number_input("Quantidade que deseja substituir", value=1, format="%d")
+    qty = st.number_input("Nova quantidade de material no estoque", value=1, format="%d")
     name = st.text_input("Nome do material que deseja substituir a quantidade")
     if st.button("Atualizar"):
         update_material(qty, name)
