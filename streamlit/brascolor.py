@@ -5,7 +5,7 @@ import mysql.connector
 conn = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="mamae1010", #insira sua senha
+    password="", #insira sua senha
     database="brascolor"
 )
 
@@ -84,6 +84,30 @@ def select_mat_os(data):
     query_result = cursor.fetchall()
     return query_result
 
+def select_eq():
+    query = "SELECT * FROM equipamento;"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_eq_id(data):
+    query = f"SELECT * FROM equipamento WHERE id = {data};"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_eq_nome(data):
+    query = f"SELECT * FROM equipamento WHERE nome = '{data}';"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_eq_os(data):
+    query = f"SELECT * FROM Equipamento WHERE id IN (SELECT equipamento_id_tem FROM tem WHERE os_id_tem = {data});"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
 def delete_eq(data):
     query = f"DELETE FROM ordem_servico WHERE id = %s;"
     cursor.execute(query, (data,))
@@ -98,7 +122,7 @@ def update_material(qty, name):
 
 #Interface
 st.title("Gráfica e Editora Brascolor")
-operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
+operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
 if operation == "Gerar Ordem de Serviço":
     st.subheader("Gerar Ordem de Serviço")
     cliente = st.number_input("Registro do cliente", value=1, format="%d")
@@ -160,6 +184,32 @@ if operation == "Visualizar Material(is)":
         df = pd.DataFrame(data, columns=["ID", "Quantidade"])
         st.dataframe(df.set_index('ID'), width=1000)
 
+if operation == "Visualizar Equipamento(s)":
+    st.subheader("Visualizar Equipamento(s)")
+    op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID do Equipamento", "Nome", "Ordem de Serviço"))
+    if op_filter == "Ver todos":
+        data = select_eq()
+        st.write("Equipamentos:")
+        df = pd.DataFrame(data, columns=["ID", "Nome", "Descrição"])
+        st.dataframe(df.set_index('ID'), width=800)
+    if op_filter == "ID do Equipamento":
+        id_eq = st.number_input("ID do Equipamento", value=1, format="%d")
+        data = select_eq_id(id_eq)
+        st.write("Equipamentos:")
+        df = pd.DataFrame(data, columns=["ID", "Nome", "Descrição"])
+        st.dataframe(df.set_index('ID'), width=800)
+    if op_filter == "Nome":
+        nome = st.text_input("Nome do Equipamento")
+        data = select_eq_nome(nome)
+        st.write("Equipamentos:")
+        df = pd.DataFrame(data, columns=["ID", "Nome", "Descrição"])
+        st.dataframe(df.set_index('ID'), width=800)
+    if op_filter == "Ordem de Serviço":
+        id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
+        data = select_eq_os(id_os)
+        st.write("Equipamentos:")
+        df = pd.DataFrame(data, columns=["ID", "Nome", "Descricao"])
+        st.dataframe(df.set_index('ID'), width=800)
 
 if operation == "Visualizar Ordem(ns) de Serviço":
     st.subheader("Visualizar Ordem(ns) de Serviço")
