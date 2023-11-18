@@ -5,7 +5,7 @@ import mysql.connector
 conn = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="", #insira sua senha
+    password="mamae1010", #insira sua senha
     database="brascolor"
 )
 
@@ -17,6 +17,24 @@ def insert_os(data):
     cursor.execute(query, data)
     conn.commit()
     st.success(f'Ordem de serviço gerada.')
+
+def insert_prod(data):
+    query = f"INSERT INTO Produto(descricao, tipo_codigo_prod) values(%s, (SELECT codigo FROM Tipo WHERE nome = %s));"
+    cursor.execute(query, data)
+    conn.commit()
+    st.success(f'Produto adicionado.')
+
+def insert_tem(data):
+    query = f"INSERT INTO tem values((SELECT id FROM Equipamento WHERE nome = %s), %s);"
+    cursor.execute(query, data)
+    conn.commit()
+    st.success(f'Equipamento adicionado à ordem de serviço.')
+
+def insert_contem(data):
+    query = f"INSERT INTO contem values(%s, %s, %s);"
+    cursor.execute(query, data)
+    conn.commit()
+    st.success(f'Material adicionado à ordem de serviço.')
 
 def select_os():
     query = "SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf;"
@@ -80,7 +98,7 @@ def update_material(qty, name):
 
 #Interface
 st.title("Gráfica e Editora Brascolor")
-operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
+operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
 if operation == "Gerar Ordem de Serviço":
     st.subheader("Gerar Ordem de Serviço")
     cliente = st.number_input("Registro do cliente", value=1, format="%d")
@@ -91,6 +109,29 @@ if operation == "Gerar Ordem de Serviço":
     data_emissao = st.text_input("Data da emissão")
     if st.button("Gerar"):
         insert_os((cliente, cpf, produto, qtd_produto, data_consulta, data_emissao))
+
+if operation == "Adicionar Novo Produto":
+    st.subheader("Adicionar Novo Produto")
+    desc = st.text_input("Descrição do Produto")
+    tipo = st.text_input("Tipo do produto")
+    if st.button("Adicionar"):
+        print(desc, tipo)
+        insert_prod((desc, tipo))
+
+if operation == "Adicionar Material(is) à Ordem de Serviço":
+    st.subheader("Adicionar Material(is) à Ordem de Serviço")
+    id_mat = st.number_input("ID do Material", value=1, format="%d")
+    id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
+    qty_mat = st.number_input("Quantidade do Material", value=1, format="%d")
+    if st.button("Adicionar"):
+        insert_contem((id_mat, id_os, qty_mat))
+
+if operation == "Adicionar Equipamento(s) à Ordem de Serviço":
+    st.subheader("Adicionar Equipamento(s) à Ordem de Serviço")
+    id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
+    nome_eq = st.text_input("Nome do Equipamento")
+    if st.button("Adicionar"):
+        insert_tem((nome_eq, id_os))
 
 if operation == "Visualizar Material(is)":
     st.subheader("Visualizar Materiais")
