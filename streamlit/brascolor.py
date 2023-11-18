@@ -13,63 +13,76 @@ cursor = conn.cursor()
 
 #Funções de manipulação de dados (backend)
 def insert_os(data):
-    query = f"INSERT INTO Ordem_servico(cliente_id_os, logistica_cpf_os, produto_id_os, data_hora_consulta, data_hora_emissao) VALUES (%s, %s, %s, %s, %s, %s)"
+    query = f"INSERT INTO Ordem_servico(cliente_id_os, logistica_cpf_os, produto_id_os, data_hora_consulta, data_hora_emissao) VALUES (%s, %s, %s, %s, %s, %s);"
     cursor.execute(query, data)
     conn.commit()
     st.success(f'Ordem de serviço gerada.')
 
 def select_os():
-    query = "SELECT * FROM ordem_servico"
+    query = "SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_os_id(data):
-    query = f"SELECT * FROM ordem_servico WHERE id = {data}"
+    query = f"SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf WHERE os.id = {data};"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_os_cli(data):
-    query = f"SELECT * FROM ordem_servico WHERE cliente_id_os = {data}"
+    query = f"SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf WHERE C.nome LIKE '%{data}%';"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_os_prod(data):
-    query = f"SELECT * FROM ordem_servico WHERE produto_id_os = {data}"
+    query = f"SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf WHERE produto_id_os IN (SELECT id FROM Produto p Where p.descricao LIKE '%{data}%');"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
-def select_os_dt_emissao(data):
-    query = f"SELECT * FROM ordem_servico WHERE data_hora_emissao = {data}"
+def select_mat():
+    query = "SELECT * FROM material;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
-def select_os_dt_consulta(data):
-    query = f"SELECT * FROM ordem_servico WHERE data_hora_consulta = {data}"
+def select_mat_id(data):
+    query = f"SELECT * FROM material WHERE id = {data};"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
-def filter_os():
-    query = f"SELECT calcular_creditos({data});"
+def select_mat_nome(data):
+    query = f"SELECT * FROM material WHERE nome LIKE '%{data}%';"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_mat_os(data):
+    query = f"SELECT material_id_cont, qtd_material FROM contem WHERE os_id_cont = {data};"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def delete_eq(data):
-    query = f"DELETE FROM equipamento WHERE id = {data}"
-    cursor.execute(query)
+    query = f"DELETE FROM ordem_servico WHERE id = %s;"
+    cursor.execute(query, (data,))
     conn.commit()
     st.success(f'Ordem de serviço apagada.')
 
+def update_material(qty, name):
+    query = f"UPDATE material SET quantidade = {qty} WHERE nome = '{name}';"
+    cursor.execute(query)
+    conn.commit()
+    st.success(f'Material atualizado.')
+
 #Interface
 st.title("Gráfica e Editora Brascolor")
-operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Apagar Ordem(ns) de Serviço", "Atualizar Ordem(ns) de Serviço"))
+operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
 if operation == "Gerar Ordem de Serviço":
+    st.subheader("Gerar Ordem de Serviço")
     cliente = st.number_input("Registro do cliente", value=1, format="%d")
     cpf = st.text_input("CPF de quem gerou")
     produto = st.number_input("Registro do Produto", value=1, format="%d")
@@ -79,68 +92,75 @@ if operation == "Gerar Ordem de Serviço":
     if st.button("Gerar"):
         insert_os((cliente, cpf, produto, qtd_produto, data_consulta, data_emissao))
 
+if operation == "Visualizar Material(is)":
+    st.subheader("Visualizar Materiais")
+    op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID do Material", "Nome", "Ordem de Serviço"))
+    if op_filter == "Ver todos":
+        data = select_mat()
+        st.write("Materiais:")
+        df = pd.DataFrame(data, columns=["ID", "Nome", "Quantidade no Estoque"])
+        st.dataframe(df.set_index('ID'), width=800)
+    elif op_filter == "ID do Material":
+        id_mat = st.number_input("ID do Material", value=1, format="%d")
+        data = select_mat_id(id_mat)
+        st.write("Materiais:")
+        df = pd.DataFrame(data, columns=["ID", "Nome", "Quantidade no Estoque"])
+        st.dataframe(df.set_index('ID'), width=800)
+    elif op_filter == "Nome":
+        desc = st.text_input("Nome do Material")
+        data = select_mat_nome(desc)
+        st.write("Materiais:")
+        df = pd.DataFrame(data, columns=["ID", "Nome", "Quantidade no Estoque"])
+        st.dataframe(df.set_index('ID'), width=800)
+    elif op_filter == "Ordem de Serviço":
+        id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
+        data = select_mat_os(id_os)
+        st.write("Materiais:")
+        df = pd.DataFrame(data, columns=["ID", "Quantidade"])
+        st.dataframe(df.set_index('ID'), width=1000)
+
 
 if operation == "Visualizar Ordem(ns) de Serviço":
-    op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "Cliente", "Produto", "Data de Emissão", "Data de Consulta"))
+    st.subheader("Visualizar Ordem(ns) de Serviço")
+    op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID da Ordem de Serviço","Cliente", "Produto"))
     if op_filter == "Ver todos":
         data = select_os()
         st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "CPF de quem gerou", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+        df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
         st.dataframe(df.set_index('ID'), width=800)
     elif op_filter == "ID da Ordem de Serviço":
         id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
         data = select_os_id(id_os)
         st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "CPF de quem gerou", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+        df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
         st.dataframe(df.set_index('ID'), width=800)
     elif op_filter == "Cliente":
-        client = st.number_input("ID do cliente", value=1, format="%d")
+        client = st.text_input("Nome do cliente")
         data = select_os_cli(client)
         st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "CPF de quem gerou", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+        df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
         st.dataframe(df.set_index('ID'), width=800)
     elif op_filter == "Produto":
-        product = st.number_input("ID do produto", value=1, format="%d")
+        product = st.text_input("Descrição do produto")
         data = select_os_prod(product)
         st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "CPF de quem gerou", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
-        st.dataframe(df.set_index('ID'), width=800)
-    elif op_filter == "Data de Emissão":
-        em_dt = st.text_input("Data de emissão")
-        data = select_os_dt_emissao(em_dt)
-        st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "CPF de quem gerou", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
-        st.dataframe(df.set_index('ID'), width=800)
-    elif op_filter == "Data de Consulta":
-        cons_dt = st.text_input("Data de consulta")
-        data = select_os_dt_consulta(cons_dt)
-        st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "CPF de quem gerou", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+        df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
         st.dataframe(df.set_index('ID'), width=800)
 
 
-if operation == "Apagar Ordem de Serviço":
+if operation == "Apagar Ordem(ns) de Serviço":
+    st.subheader("Apagar Ordem de Serviço")
+    id_os = st.number_input("ID da Ordem de Serviço que deseja apagar", value=1, format="%d")
     if st.button("Apagar"):
-        delete_eq()
+        delete_eq(id_os)
 
 
-if operation == "Atualizar Ordem de Serviço":
-    cliente = st.number_input("Registro do cliente", value=1, format="%d")
-    cpf = st.text_input("CPF de quem gerou")
-    produto = st.number_input("Registro do Produto", value=1, format="%d")
-    data_consulta = st.date_input("Data da consulta")
-    data_emissao = st.date_input("Data da emissão")
+if operation == "Atualizar Material(is)":
+    st.subheader("Atualizar Material(is)")
+    qty = st.number_input("Quantidade que deseja substituir", value=1, format="%d")
+    name = st.text_input("Nome do material que deseja substituir a quantidade")
     if st.button("Atualizar"):
-        update_os(id, cliente, cpf, produto, data_consulta, data_emissao)
-# table = st.sidebar.selectbox("Selecione a tabela", ("Ordem de Serviço", "Cliente", "pessoa", "professor", "disciplina", "turma", "ministra", "aluno", "aluno_turma", "prova", "monitoria", "busca - créditos totais"))
-
-#Operações
-
-    # if table == 'busca - créditos totais':
-    #     matricula_aluno = st.number_input("Matrícula do aluno", min_value=1010)
-    #     if st.button("Buscar"):
-    #         result = select_data(matricula_aluno)
-    #         st.write(f"Total de créditos do aluno: {result}")
+        update_material(qty, name)
 
 cursor.close()
 conn.close()
