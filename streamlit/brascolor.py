@@ -1,6 +1,10 @@
 import streamlit as st
+from streamlit import session_state
 import pandas as pd
 import mysql.connector
+
+if 'login' not in session_state:
+    session_state.login = False
 
 conn = mysql.connector.connect(
     host="localhost",
@@ -12,6 +16,16 @@ conn = mysql.connector.connect(
 cursor = conn.cursor()
 
 #Funções de manipulação de dados (backend)
+def login_logic(username):
+    query = f"SELECT * FROM funcionario WHERE cpf='{username}';"
+    cursor.execute(query)
+    record = cursor.fetchone()
+    if record:
+        session_state.login = True
+        session_state.username = username
+    else:
+        st.warning("Incorrect username or password")
+
 def insert_os(data):
     query = f"INSERT INTO Ordem_servico(cliente_id_os, logistica_cpf_os, produto_id_os, data_hora_consulta, data_hora_emissao) VALUES (%s, %s, %s, %s, %s, %s);"
     cursor.execute(query, data)
@@ -122,135 +136,143 @@ def update_material(qty, name):
 
 #Interface
 st.title("Gráfica e Editora Brascolor")
-operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
-if operation == "Gerar Ordem de Serviço":
-    st.subheader("Gerar Ordem de Serviço")
-    cliente = st.number_input("Registro do cliente", value=1, format="%d")
-    cpf = st.text_input("CPF de quem gerou")
-    produto = st.number_input("Registro do Produto", value=1, format="%d")
-    qtd_produto = st.number_input("Quantidade de produtos", value=1, format="%d")
-    data_consulta = st.text_input("Data da consulta")
-    data_emissao = st.text_input("Data da emissão")
-    if st.button("Gerar"):
-        insert_os((cliente, cpf, produto, qtd_produto, data_consulta, data_emissao))
+with st.sidebar:
+    username = st.text_input("Digite seu CPF")
 
-if operation == "Adicionar Novo Produto":
-    st.subheader("Adicionar Novo Produto")
-    desc = st.text_input("Descrição do Produto")
-    tipo = st.text_input("Tipo do produto")
-    if st.button("Adicionar"):
-        insert_prod((desc, tipo))
+    if st.button("Login"):
+        login_logic(username)
+if session_state.login == True:
+    operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
+    if operation == "Gerar Ordem de Serviço":
+        st.subheader("Gerar Ordem de Serviço")
+        cliente = st.number_input("Registro do cliente", value=1, format="%d")
+        cpf = st.text_input("CPF de quem gerou")
+        produto = st.number_input("Registro do Produto", value=1, format="%d")
+        qtd_produto = st.number_input("Quantidade de produtos", value=1, format="%d")
+        data_consulta = st.text_input("Data da consulta")
+        data_emissao = st.text_input("Data da emissão")
+        if st.button("Gerar"):
+            insert_os((cliente, cpf, produto, qtd_produto, data_consulta, data_emissao))
 
-if operation == "Adicionar Material(is) à Ordem de Serviço":
-    st.subheader("Adicionar Material(is) à Ordem de Serviço")
-    id_mat = st.number_input("ID do Material", value=1, format="%d")
-    id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
-    qty_mat = st.number_input("Quantidade do Material", value=1, format="%d")
-    if st.button("Adicionar"):
-        insert_contem((id_mat, id_os, qty_mat))
+    if operation == "Adicionar Novo Produto":
+        st.subheader("Adicionar Novo Produto")
+        desc = st.text_input("Descrição do Produto")
+        tipo = st.text_input("Tipo do produto")
+        if st.button("Adicionar"):
+            insert_prod((desc, tipo))
 
-if operation == "Adicionar Equipamento(s) à Ordem de Serviço":
-    st.subheader("Adicionar Equipamento(s) à Ordem de Serviço")
-    id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
-    nome_eq = st.text_input("Nome do Equipamento")
-    if st.button("Adicionar"):
-        insert_tem((nome_eq, id_os))
-
-if operation == "Visualizar Material(is)":
-    st.subheader("Visualizar Materiais")
-    op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID do Material", "Nome", "Ordem de Serviço"))
-    if op_filter == "Ver todos":
-        data = select_mat()
-        st.write("Materiais:")
-        df = pd.DataFrame(data, columns=["ID", "Nome", "Quantidade no Estoque"])
-        st.dataframe(df.set_index('ID'), width=800)
-    elif op_filter == "ID do Material":
+    if operation == "Adicionar Material(is) à Ordem de Serviço":
+        st.subheader("Adicionar Material(is) à Ordem de Serviço")
         id_mat = st.number_input("ID do Material", value=1, format="%d")
-        data = select_mat_id(id_mat)
-        st.write("Materiais:")
-        df = pd.DataFrame(data, columns=["ID", "Nome", "Quantidade no Estoque"])
-        st.dataframe(df.set_index('ID'), width=800)
-    elif op_filter == "Nome":
-        desc = st.text_input("Nome do Material")
-        data = select_mat_nome(desc)
-        st.write("Materiais:")
-        df = pd.DataFrame(data, columns=["ID", "Nome", "Quantidade no Estoque"])
-        st.dataframe(df.set_index('ID'), width=800)
-    elif op_filter == "Ordem de Serviço":
         id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
-        data = select_mat_os(id_os)
-        st.write("Materiais:")
-        df = pd.DataFrame(data, columns=["ID", "Quantidade"])
-        st.dataframe(df.set_index('ID'), width=1000)
+        qty_mat = st.number_input("Quantidade do Material", value=1, format="%d")
+        if st.button("Adicionar"):
+            insert_contem((id_mat, id_os, qty_mat))
 
-if operation == "Visualizar Equipamento(s)":
-    st.subheader("Visualizar Equipamento(s)")
-    op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID do Equipamento", "Nome", "Ordem de Serviço"))
-    if op_filter == "Ver todos":
-        data = select_eq()
-        st.write("Equipamentos:")
-        df = pd.DataFrame(data, columns=["ID", "Nome", "Descrição"])
-        st.dataframe(df.set_index('ID'), width=800)
-    if op_filter == "ID do Equipamento":
-        id_eq = st.number_input("ID do Equipamento", value=1, format="%d")
-        data = select_eq_id(id_eq)
-        st.write("Equipamentos:")
-        df = pd.DataFrame(data, columns=["ID", "Nome", "Descrição"])
-        st.dataframe(df.set_index('ID'), width=800)
-    if op_filter == "Nome":
-        nome = st.text_input("Nome do Equipamento")
-        data = select_eq_nome(nome)
-        st.write("Equipamentos:")
-        df = pd.DataFrame(data, columns=["ID", "Nome", "Descrição"])
-        st.dataframe(df.set_index('ID'), width=800)
-    if op_filter == "Ordem de Serviço":
+    if operation == "Adicionar Equipamento(s) à Ordem de Serviço":
+        st.subheader("Adicionar Equipamento(s) à Ordem de Serviço")
         id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
-        data = select_eq_os(id_os)
-        st.write("Equipamentos:")
-        df = pd.DataFrame(data, columns=["ID", "Nome", "Descricao"])
-        st.dataframe(df.set_index('ID'), width=800)
+        nome_eq = st.text_input("Nome do Equipamento")
+        if st.button("Adicionar"):
+            insert_tem((nome_eq, id_os))
 
-if operation == "Visualizar Ordem(ns) de Serviço":
-    st.subheader("Visualizar Ordem(ns) de Serviço")
-    op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID da Ordem de Serviço","Cliente", "Produto"))
-    if op_filter == "Ver todos":
-        data = select_os()
-        st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
-        st.dataframe(df.set_index('ID'), width=800)
-    elif op_filter == "ID da Ordem de Serviço":
-        id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
-        data = select_os_id(id_os)
-        st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
-        st.dataframe(df.set_index('ID'), width=800)
-    elif op_filter == "Cliente":
-        client = st.text_input("Nome do cliente")
-        data = select_os_cli(client)
-        st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
-        st.dataframe(df.set_index('ID'), width=800)
-    elif op_filter == "Produto":
-        product = st.text_input("Descrição do produto")
-        data = select_os_prod(product)
-        st.write("Ordens de Serviço:")
-        df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
-        st.dataframe(df.set_index('ID'), width=800)
+    if operation == "Visualizar Material(is)":
+        st.subheader("Visualizar Materiais")
+        op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID do Material", "Nome", "Ordem de Serviço"))
+        if op_filter == "Ver todos":
+            data = select_mat()
+            st.write("Materiais:")
+            df = pd.DataFrame(data, columns=["ID", "Nome", "Quantidade no Estoque"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "ID do Material":
+            id_mat = st.number_input("ID do Material", value=1, format="%d")
+            data = select_mat_id(id_mat)
+            st.write("Materiais:")
+            df = pd.DataFrame(data, columns=["ID", "Nome", "Quantidade no Estoque"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Nome":
+            desc = st.text_input("Nome do Material")
+            data = select_mat_nome(desc)
+            st.write("Materiais:")
+            df = pd.DataFrame(data, columns=["ID", "Nome", "Quantidade no Estoque"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Ordem de Serviço":
+            id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
+            data = select_mat_os(id_os)
+            st.write("Materiais:")
+            df = pd.DataFrame(data, columns=["ID", "Quantidade"])
+            st.dataframe(df.set_index('ID'), width=1000)
+
+    if operation == "Visualizar Equipamento(s)":
+        st.subheader("Visualizar Equipamento(s)")
+        op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID do Equipamento", "Nome", "Ordem de Serviço"))
+        if op_filter == "Ver todos":
+            data = select_eq()
+            st.write("Equipamentos:")
+            df = pd.DataFrame(data, columns=["ID", "Nome", "Descrição"])
+            st.dataframe(df.set_index('ID'), width=800)
+        if op_filter == "ID do Equipamento":
+            id_eq = st.number_input("ID do Equipamento", value=1, format="%d")
+            data = select_eq_id(id_eq)
+            st.write("Equipamentos:")
+            df = pd.DataFrame(data, columns=["ID", "Nome", "Descrição"])
+            st.dataframe(df.set_index('ID'), width=800)
+        if op_filter == "Nome":
+            nome = st.text_input("Nome do Equipamento")
+            data = select_eq_nome(nome)
+            st.write("Equipamentos:")
+            df = pd.DataFrame(data, columns=["ID", "Nome", "Descrição"])
+            st.dataframe(df.set_index('ID'), width=800)
+        if op_filter == "Ordem de Serviço":
+            id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
+            data = select_eq_os(id_os)
+            st.write("Equipamentos:")
+            df = pd.DataFrame(data, columns=["ID", "Nome", "Descricao"])
+            st.dataframe(df.set_index('ID'), width=800)
+
+    if operation == "Visualizar Ordem(ns) de Serviço":
+        st.subheader("Visualizar Ordem(ns) de Serviço")
+        op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID da Ordem de Serviço","Cliente", "Produto"))
+        if op_filter == "Ver todos":
+            data = select_os()
+            st.write("Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "ID da Ordem de Serviço":
+            id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
+            data = select_os_id(id_os)
+            st.write("Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Cliente":
+            client = st.text_input("Nome do cliente")
+            data = select_os_cli(client)
+            st.write("Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Produto":
+            product = st.text_input("Descrição do produto")
+            data = select_os_prod(product)
+            st.write("Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
 
 
-if operation == "Apagar Ordem(ns) de Serviço":
-    st.subheader("Apagar Ordem de Serviço")
-    id_os = st.number_input("ID da Ordem de Serviço que deseja apagar", value=1, format="%d")
-    if st.button("Apagar"):
-        delete_eq(id_os)
+    if operation == "Apagar Ordem(ns) de Serviço":
+        st.subheader("Apagar Ordem de Serviço")
+        id_os = st.number_input("ID da Ordem de Serviço que deseja apagar", value=1, format="%d")
+        if st.button("Apagar"):
+            delete_eq(id_os)
 
 
-if operation == "Atualizar Material(is)":
-    st.subheader("Atualizar Material(is)")
-    qty = st.number_input("Nova quantidade de material no estoque", value=1, format="%d")
-    name = st.text_input("Nome do material que deseja substituir a quantidade")
-    if st.button("Atualizar"):
-        update_material(qty, name)
+    if operation == "Atualizar Material(is)":
+        st.subheader("Atualizar Material(is)")
+        qty = st.number_input("Nova quantidade de material no estoque", value=1, format="%d")
+        name = st.text_input("Nome do material que deseja substituir a quantidade")
+        if st.button("Atualizar"):
+            update_material(qty, name)
+else:
+    login_logic(username)
 
 cursor.close()
 conn.close()
