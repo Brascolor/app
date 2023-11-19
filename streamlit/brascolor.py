@@ -139,7 +139,6 @@ if operation == "Adicionar Novo Produto":
     desc = st.text_input("Descrição do Produto")
     tipo = st.text_input("Tipo do produto")
     if st.button("Adicionar"):
-        print(desc, tipo)
         insert_prod((desc, tipo))
 
 if operation == "Adicionar Material(is) à Ordem de Serviço":

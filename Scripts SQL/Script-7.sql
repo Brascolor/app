@@ -176,9 +176,7 @@ numero int,
 rua varchar(50),
 estado varchar(30),
 bairro varchar(30)
-);
-
-drop trigger tr_delete_endereco;
+);-
 
 DELIMITER $$
 CREATE TRIGGER tr_delete_tem
