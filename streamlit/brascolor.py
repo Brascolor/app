@@ -140,6 +140,18 @@ def update_material(qty, name):
     conn.commit()
     st.success(f'Material atualizado.')
 
+def mes_mais_os():
+    query = "SELECT Ano, Mes, TotalOrdens FROM (SELECT YEAR(data_hora_emissao) AS Ano, MONTH(data_hora_emissao) AS Mes, COUNT(*) AS TotalOrdens FROM Ordem_servico GROUP BY YEAR(data_hora_emissao), MONTH(data_hora_emissao)) AS MesesOrdens WHERE TotalOrdens = (SELECT MAX(TotalOrdens) FROM (SELECT COUNT(*) AS TotalOrdens FROM Ordem_servico GROUP BY YEAR(data_hora_emissao), MONTH(data_hora_emissao)) AS MaxOrdens);"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def os_mais_produtos():
+    query = "SELECT * FROM Ordem_servico WHERE qtd_produto = (SELECT MAX(qtd_produto) FROM Ordem_servico);"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
 #Interface
 st.title("Gráfica e Editora Brascolor")
 if session_state.login == False:
@@ -149,7 +161,7 @@ if session_state.login == False:
         if st.button("Login"):
             login_logic(username)
 else:
-    operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Adicionar Endereço(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
+    operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Adicionar Endereço(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)", "Visualizar Relatórios"))
     if operation == "Gerar Ordem de Serviço":
         st.subheader("Gerar Ordem de Serviço")
         cliente = st.number_input("Registro do cliente", value=1, format="%d")
@@ -289,6 +301,26 @@ else:
         name = st.text_input("Nome do material que deseja substituir a quantidade")
         if st.button("Atualizar"):
             update_material(qty, name)
+        
+    if operation == "Visualizar Relatórios":
+        st.subheader("Visualizar Relatórios")
+        op_filter = st.sidebar.selectbox("Tipo", ("Mês com mais Ordens de Serviço", "Ordem(ns) de Serviço com maior quantidade de produtos", "Cliente", "Produto"))
+        if op_filter == "Mês com mais Ordens de Serviço":
+            data = mes_mais_os()
+            st.write("Ano, Mês e Total de Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["Ano", "Mês", "Ordens de Serviço"])
+            st.dataframe(df.set_index('Mês'), width=800)
+        elif op_filter == "Ordem(ns) de Serviço com maior quantidade de produtos":
+            data = os_mais_produtos()
+            st.write("Ordens de Serviço com maior quantidade de produtos:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Produto":
+            product = st.text_input("Descrição do produto")
+            data = select_os_prod(product)
+            st.write("Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
 
 cursor.close()
 conn.close()
