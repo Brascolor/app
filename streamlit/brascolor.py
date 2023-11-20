@@ -57,7 +57,7 @@ def insert_add(data):
     st.success(f'Endereço adicionado à ordem de serviço.')
 
 def select_os():
-    query = "SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf;"
+    query = "SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
@@ -69,19 +69,19 @@ def select_os_id(data):
     return query_result
 
 def select_os_cli(data):
-    query = f"SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf WHERE C.nome LIKE '%{data}%';"
+    query = f"SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf WHERE C.nome LIKE '%{data}%' order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_os_prod(data):
-    query = f"SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf WHERE produto_id_os IN (SELECT id FROM Produto p Where p.descricao LIKE '%{data}%');"
+    query = f"SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf WHERE produto_id_os IN (SELECT id FROM Produto p Where p.descricao LIKE '%{data}%') order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_prod():
-    query = "SELECT * FROM produto;"
+    query = "SELECT * FROM produto order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
@@ -93,19 +93,19 @@ def select_prod_id(data):
     return query_result
 
 def select_prod_desc(data):
-    query = f"SELECT * FROM produto WHERE descricao LIKE '%{data}%';"
+    query = f"SELECT * FROM produto WHERE descricao LIKE '%{data}%' order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_prod_tipo(data):
-    query = f"SELECT * FROM produto WHERE tipo_codigo_prod = (SELECT codigo FROM tipo WHERE nome = '{data}');"
+    query = f"SELECT * FROM produto WHERE tipo_codigo_prod = (SELECT codigo FROM tipo WHERE nome = '{data}') order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_mat():
-    query = "SELECT * FROM material;"
+    query = "SELECT * FROM material order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
@@ -117,19 +117,19 @@ def select_mat_id(data):
     return query_result
 
 def select_mat_nome(data):
-    query = f"SELECT * FROM material WHERE nome LIKE '%{data}%';"
+    query = f"SELECT * FROM material WHERE nome LIKE '%{data}%' order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_mat_os(data):
-    query = f"SELECT material_id_cont, qtd_material FROM contem WHERE os_id_cont = {data};"
+    query = f"SELECT material_id_cont, qtd_material FROM contem WHERE os_id_cont = {data} order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_eq():
-    query = "SELECT * FROM equipamento;"
+    query = "SELECT * FROM equipamento order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
@@ -141,13 +141,37 @@ def select_eq_id(data):
     return query_result
 
 def select_eq_nome(data):
-    query = f"SELECT * FROM equipamento WHERE nome = '{data}';"
+    query = f"SELECT * FROM equipamento WHERE nome = '{data}' order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_eq_os(data):
-    query = f"SELECT * FROM Equipamento WHERE id IN (SELECT equipamento_id_tem FROM tem WHERE os_id_tem = {data});"
+    query = f"SELECT * FROM Equipamento WHERE id IN (SELECT equipamento_id_tem FROM tem WHERE os_id_tem = {data}) order by id asc;"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_end():
+    query = "SELECT * FROM endereco order by id asc;"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_end_id(data):
+    query = f"SELECT * FROM endereco WHERE os_id_end = {data};"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_end_cidade(data):
+    query = f"SELECT * FROM endereco WHERE cidade LIKE '%{data}%' order by id asc;"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_end_estado(data):
+    query = f"SELECT * FROM endereco WHERE estado = '{data}' order by id asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
@@ -185,7 +209,7 @@ if session_state.login == False:
         if st.button("Login"):
             login_logic(username)
 else:
-    operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Adicionar Endereço(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Produto(s)", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)", "Visualizar Relatórios"))
+    operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Adicionar Endereço(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Produto(s)", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Visualizar Endereço(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)", "Visualizar Relatórios"))
     if operation == "Gerar Ordem de Serviço":
         st.subheader("Gerar Ordem de Serviço")
         cliente = st.number_input("Registro do cliente", value=1, format="%d")
@@ -229,6 +253,33 @@ else:
         bairro = st.text_input("Bairro")
         if st.button("Adicionar"):
             insert_add((id_os, cidade, numero, rua, estado, bairro))
+
+    if operation == "Visualizar Ordem(ns) de Serviço":
+        st.subheader("Visualizar Ordem(ns) de Serviço")
+        op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID da Ordem de Serviço","Cliente", "Produto"))
+        if op_filter == "Ver todos":
+            data = select_os()
+            st.write("Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "ID da Ordem de Serviço":
+            id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
+            data = select_os_id(id_os)
+            st.write("Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Cliente":
+            client = st.text_input("Nome do cliente")
+            data = select_os_cli(client)
+            st.write("Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Produto":
+            product = st.text_input("Descrição do produto")
+            data = select_os_prod(product)
+            st.write("Ordens de Serviço:")
+            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            st.dataframe(df.set_index('ID'), width=800)
 
     if operation == "Visualizar Produto(s)":
         st.subheader("Visualizar Produto(s)")
@@ -311,33 +362,32 @@ else:
             df = pd.DataFrame(data, columns=["ID", "Nome", "Descricao"])
             st.dataframe(df.set_index('ID'), width=800)
 
-    if operation == "Visualizar Ordem(ns) de Serviço":
-        st.subheader("Visualizar Ordem(ns) de Serviço")
-        op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID da Ordem de Serviço","Cliente", "Produto"))
+    if operation == "Visualizar Endereço(s)":
+        st.subheader("Visualizar Endereço(s)")
+        op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID da Ordem de Serviço", "Cidade", "Estado"))
         if op_filter == "Ver todos":
-            data = select_os()
-            st.write("Ordens de Serviço:")
-            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            data = select_end()
+            st.write("Endereços:")
+            df = pd.DataFrame(data, columns=["ID", "Cidade", "Número", "Rua", "Estado", "Bairro"])
             st.dataframe(df.set_index('ID'), width=800)
         elif op_filter == "ID da Ordem de Serviço":
             id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
-            data = select_os_id(id_os)
-            st.write("Ordens de Serviço:")
-            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+            data = select_end_id(id_os)
+            st.write("Endereços:")
+            df = pd.DataFrame(data, columns=["ID", "Cidade", "Número", "Rua", "Estado", "Bairro"])
             st.dataframe(df.set_index('ID'), width=800)
-        elif op_filter == "Cliente":
-            client = st.text_input("Nome do cliente")
-            data = select_os_cli(client)
-            st.write("Ordens de Serviço:")
-            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+        elif op_filter == "Cidade":
+            cidade = st.text_input("Cidade")
+            data = select_end_cidade(cidade)
+            st.write("Endereços:")
+            df = pd.DataFrame(data, columns=["ID", "Cidade", "Número", "Rua", "Estado", "Bairro"])
             st.dataframe(df.set_index('ID'), width=800)
-        elif op_filter == "Produto":
-            product = st.text_input("Descrição do produto")
-            data = select_os_prod(product)
-            st.write("Ordens de Serviço:")
-            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
+        elif op_filter == "Estado":
+            estado = st.text_input("Estado")
+            data = select_end_estado(estado)
+            st.write("Endereços:")
+            df = pd.DataFrame(data, columns=["ID", "Cidade", "Número", "Rua", "Estado", "Bairro"])
             st.dataframe(df.set_index('ID'), width=800)
-
 
     if operation == "Apagar Ordem(ns) de Serviço":
         st.subheader("Apagar Ordem de Serviço")

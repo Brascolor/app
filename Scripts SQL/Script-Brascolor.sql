@@ -176,7 +176,7 @@ numero int,
 rua varchar(50),
 estado varchar(30),
 bairro varchar(30)
-);-
+);
 
 DELIMITER $$
 CREATE TRIGGER tr_delete_tem
@@ -232,7 +232,6 @@ INSERT INTO Produto values(1, 'sacolas de papel com impressão frente', 1);
 INSERT INTO Produto values(2, 'tablóides com impressão frente e verso', 2);
 INSERT INTO Produto values(3, 'jornal com impressão frente e verso', 3);
 INSERT INTO Produto values(4, 'tablóides com impressão frente e verso', 2);
-
 
 INSERT INTO Cliente values(1, 'Duda Cakes', 'Recife', 30, 'Av. Agamenon Magalhaes', 'Pernambuco', 'Ilha do Leite');
 INSERT INTO Cliente values(2, 'Novo Atacarejo', 'Recife', 1400, 'Av. da Recuperação', 'Pernambuco', 'Dois Irmãos');
@@ -316,19 +315,16 @@ INSERT INTO Ordem_servico (cliente_id_os, logistica_cpf_os, produto_id_os, qtd_p
 INSERT INTO Ordem_servico (cliente_id_os, logistica_cpf_os, produto_id_os, qtd_produto, data_hora_consulta, data_hora_emissao) values(2, '46522890062', 2, 12000, NOW(), NOW());
 INSERT INTO Ordem_servico (cliente_id_os, logistica_cpf_os, produto_id_os, qtd_produto, data_hora_consulta, data_hora_emissao) values(3, '17291974003', 3, 10000000, NOW(), NOW());
 INSERT INTO Ordem_servico (cliente_id_os, logistica_cpf_os, produto_id_os, qtd_produto, data_hora_consulta, data_hora_emissao) values(4, '17291974003', 4, 24000, NOW(), NOW());
-INSERT INTO Ordem_servico (id, cliente_id_os, logistica_cpf_os, produto_id_os, qtd_produto, data_hora_consulta, data_hora_emissao) values(5, 2, '46522890062', 2, 12001, NOW(), NOW());
 
 INSERT INTO Endereco values(1, 'Recife', 30, 'Av. Agamenon Magalhaes', 'Pernambuco', 'Ilha do Leite');
 INSERT INTO Endereco values(2, 'Recife', 1400, 'Av. da Recuperação', 'Pernambuco', 'Dois Irmãos');
 INSERT INTO Endereco values(3, 'São Paulo', 255, 'Rua Barão de Itapetinga', 'São Paulo', 'Centro');
 INSERT INTO Endereco values(4, 'Recife', 261, 'Rua Desembargador Góis', 'Recife', 'Parnamirim');
-INSERT INTO Endereco values(5, 'Recife', 1400, 'Av. da Recuperação', 'Pernambuco', 'Dois Irmãos');
 
 INSERT INTO tem values(1, 1);
 INSERT INTO tem values(2, 2);
 INSERT INTO tem values(3, 3);
 INSERT INTO tem values(2, 4);
-INSERT INTO tem values(2, 5);
 
 INSERT INTO contem values(8, 1, 20);
 
@@ -348,10 +344,4 @@ INSERT INTO contem values(9, 4, 30);
 INSERT INTO contem values(4, 4, 1);
 INSERT INTO contem values(5, 4, 1);
 INSERT INTO contem values(6, 4, 1);
-INSERT INTO contem values(7, 4, 1);
-
-INSERT INTO contem values(9, 5, 30);
-INSERT INTO contem values(4, 5, 1);
-INSERT INTO contem values(5, 5, 1);
-INSERT INTO contem values(6, 5, 1);
-INSERT INTO contem values(7, 5, 1);
+INSERT INTO contem values(7, 4, 1);
