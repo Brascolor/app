@@ -27,7 +27,7 @@ def login_logic(username):
         st.warning("Incorrect username or password")
 
 def insert_os(data):
-    query = f"INSERT INTO Ordem_servico(cliente_id_os, logistica_cpf_os, produto_id_os, data_hora_consulta, data_hora_emissao) VALUES (%s, %s, %s, %s, %s, %s);"
+    query = f"INSERT INTO Ordem_servico(cliente_id_os, logistica_cpf_os, produto_id_os, qtd_produto, data_hora_consulta, data_hora_emissao) VALUES (%s, %s, %s, %s, %s, %s);"
     cursor.execute(query, data)
     conn.commit()
     st.success(f'Ordem de serviço gerada.')
@@ -49,6 +49,12 @@ def insert_contem(data):
     cursor.execute(query, data)
     conn.commit()
     st.success(f'Material adicionado à ordem de serviço.')
+
+def insert_add(data):
+    query = f"INSERT INTO endereco values(%s, %s, %s, %s, %s, %s);"
+    cursor.execute(query, data)
+    conn.commit()
+    st.success(f'Endereço adicionado à ordem de serviço.')
 
 def select_os():
     query = "SELECT OS.id, C.nome AS nome_cliente, f.nome, os.produto_id_os, os.qtd_produto, os.data_hora_consulta, os.data_hora_emissao FROM Ordem_servico OS JOIN Cliente C ON OS.cliente_id_os = C.id join funcionario f on os.logistica_cpf_os = f.cpf;"
@@ -136,13 +142,14 @@ def update_material(qty, name):
 
 #Interface
 st.title("Gráfica e Editora Brascolor")
-with st.sidebar:
-    username = st.text_input("Digite seu CPF")
+if session_state.login == False:
+    with st.sidebar:
+        username = st.text_input("Digite seu CPF")
 
-    if st.button("Login"):
-        login_logic(username)
-if session_state.login == True:
-    operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
+        if st.button("Login"):
+            login_logic(username)
+else:
+    operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Adicionar Endereço(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)"))
     if operation == "Gerar Ordem de Serviço":
         st.subheader("Gerar Ordem de Serviço")
         cliente = st.number_input("Registro do cliente", value=1, format="%d")
@@ -175,6 +182,17 @@ if session_state.login == True:
         nome_eq = st.text_input("Nome do Equipamento")
         if st.button("Adicionar"):
             insert_tem((nome_eq, id_os))
+
+    if operation == "Adicionar Endereço(s) à Ordem de Serviço":
+        st.subheader("Adicionar Endereço(s) à Ordem de Serviço")
+        id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
+        cidade = st.text_input("Cidade")
+        numero = st.number_input("Número", value=1, format="%d")
+        rua = st.text_input("Rua")
+        estado = st.text_input("Estado")
+        bairro = st.text_input("Bairro")
+        if st.button("Adicionar"):
+            insert_add((id_os, cidade, numero, rua, estado, bairro))
 
     if operation == "Visualizar Material(is)":
         st.subheader("Visualizar Materiais")
@@ -271,8 +289,6 @@ if session_state.login == True:
         name = st.text_input("Nome do material que deseja substituir a quantidade")
         if st.button("Atualizar"):
             update_material(qty, name)
-else:
-    login_logic(username)
 
 cursor.close()
 conn.close()
