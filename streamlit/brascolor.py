@@ -80,6 +80,30 @@ def select_os_prod(data):
     query_result = cursor.fetchall()
     return query_result
 
+def select_prod():
+    query = "SELECT * FROM produto;"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_prod_id(data):
+    query = f"SELECT * FROM produto WHERE id = {data};"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_prod_desc(data):
+    query = f"SELECT * FROM produto WHERE descricao = '{data}';"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def select_prod_tipo(data):
+    query = f"SELECT * FROM produto WHERE tipo_codigo_prod = (SELECT codigo FROM tipo WHERE nome = '{data}');"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
 def select_mat():
     query = "SELECT * FROM material;"
     cursor.execute(query)
@@ -161,7 +185,7 @@ if session_state.login == False:
         if st.button("Login"):
             login_logic(username)
 else:
-    operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Adicionar Endereço(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)", "Visualizar Relatórios"))
+    operation = st.sidebar.selectbox("Selecione o que deseja fazer", ("Gerar Ordem de Serviço", "Adicionar Novo Produto", "Adicionar Material(is) à Ordem de Serviço", "Adicionar Equipamento(s) à Ordem de Serviço", "Adicionar Endereço(s) à Ordem de Serviço", "Visualizar Ordem(ns) de Serviço", "Visualizar Produto(s)", "Visualizar Material(is)", "Visualizar Equipamento(s)", "Apagar Ordem(ns) de Serviço", "Atualizar Material(is)", "Visualizar Relatórios"))
     if operation == "Gerar Ordem de Serviço":
         st.subheader("Gerar Ordem de Serviço")
         cliente = st.number_input("Registro do cliente", value=1, format="%d")
@@ -205,6 +229,33 @@ else:
         bairro = st.text_input("Bairro")
         if st.button("Adicionar"):
             insert_add((id_os, cidade, numero, rua, estado, bairro))
+
+    if operation == "Visualizar Produto(s)":
+        st.subheader("Visualizar Produto(s)")
+        op_filter = st.sidebar.selectbox("Filtrar por", ("Ver todos", "ID do Produto", "Descrição", "Tipo"))
+        if op_filter == "Ver todos":
+            data = select_prod()
+            st.write("Produtos:")
+            df = pd.DataFrame(data, columns=["ID", "Descrição", "Tipo"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "ID do Produto":
+            id_prod = st.number_input("ID do Produto", value=1, format="%d")
+            data = select_prod_id(id_prod)
+            st.write("Produtos:")
+            df = pd.DataFrame(data, columns=["ID", "Descrição", "Tipo"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Descrição":
+            desc = st.text_input("Descrição do Produto")
+            data = select_prod_desc(desc)
+            st.write("Produtos:")
+            df = pd.DataFrame(data, columns=["ID", "Descrição", "Tipo"])
+            st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Tipo":
+            tipo = st.text_input("Tipo do Produto")
+            data = select_prod_tipo(tipo)
+            st.write("Produtos:")
+            df = pd.DataFrame(data, columns=["ID", "Descrição", "Tipo"])
+            st.dataframe(df.set_index('ID'), width=800)
 
     if operation == "Visualizar Material(is)":
         st.subheader("Visualizar Materiais")
