@@ -50,7 +50,7 @@ def insert_contem(data):
     conn.commit()
     st.success(f'Material adicionado à ordem de serviço.')
 
-def insert_add(data):
+def insert_end(data):
     query = f"INSERT INTO endereco values(%s, %s, %s, %s, %s, %s);"
     cursor.execute(query, data)
     conn.commit()
@@ -252,7 +252,7 @@ else:
         estado = st.text_input("Estado")
         bairro = st.text_input("Bairro")
         if st.button("Adicionar"):
-            insert_add((id_os, cidade, numero, rua, estado, bairro))
+            insert_end((id_os, cidade, numero, rua, estado, bairro))
 
     if operation == "Visualizar Ordem(ns) de Serviço":
         st.subheader("Visualizar Ordem(ns) de Serviço")
