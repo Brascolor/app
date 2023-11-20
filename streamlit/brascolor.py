@@ -93,7 +93,7 @@ def select_prod_id(data):
     return query_result
 
 def select_prod_desc(data):
-    query = f"SELECT * FROM produto WHERE descricao = '{data}';"
+    query = f"SELECT * FROM produto WHERE descricao LIKE '%{data}%';"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
@@ -355,7 +355,7 @@ else:
         
     if operation == "Visualizar Relatórios":
         st.subheader("Visualizar Relatórios")
-        op_filter = st.sidebar.selectbox("Tipo", ("Mês com mais Ordens de Serviço", "Ordem(ns) de Serviço com maior quantidade de produtos", "Cliente", "Produto"))
+        op_filter = st.sidebar.selectbox("Tipo", ("Mês com mais Ordens de Serviço", "Ordem(ns) de Serviço com maior quantidade de produtos"))
         if op_filter == "Mês com mais Ordens de Serviço":
             data = mes_mais_os()
             st.write("Ano, Mês e Total de Ordens de Serviço:")
@@ -364,12 +364,6 @@ else:
         elif op_filter == "Ordem(ns) de Serviço com maior quantidade de produtos":
             data = os_mais_produtos()
             st.write("Ordens de Serviço com maior quantidade de produtos:")
-            df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
-            st.dataframe(df.set_index('ID'), width=800)
-        elif op_filter == "Produto":
-            product = st.text_input("Descrição do produto")
-            data = select_os_prod(product)
-            st.write("Ordens de Serviço:")
             df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
             st.dataframe(df.set_index('ID'), width=800)
 
