@@ -123,7 +123,7 @@ def select_mat_nome(data):
     return query_result
 
 def select_mat_os(data):
-    query = f"SELECT material_id_cont, qtd_material FROM contem WHERE os_id_cont = {data} order by id asc;"
+    query = f"SELECT material_id_cont, qtd_material FROM contem WHERE os_id_cont = {data};"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
@@ -153,7 +153,7 @@ def select_eq_os(data):
     return query_result
 
 def select_end():
-    query = "SELECT * FROM endereco order by id asc;"
+    query = "SELECT * FROM endereco order by os_id_end asc;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
@@ -165,18 +165,18 @@ def select_end_id(data):
     return query_result
 
 def select_end_cidade(data):
-    query = f"SELECT * FROM endereco WHERE cidade LIKE '%{data}%' order by id asc;"
+    query = f"SELECT * FROM endereco WHERE cidade LIKE '%{data}%';"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
 def select_end_estado(data):
-    query = f"SELECT * FROM endereco WHERE estado = '{data}' order by id asc;"
+    query = f"SELECT * FROM endereco WHERE estado = '{data}';"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
 
-def delete_eq(data):
+def delete_os(data):
     query = f"DELETE FROM ordem_servico WHERE id = %s;"
     cursor.execute(query, (data,))
     conn.commit()
@@ -196,6 +196,12 @@ def mes_mais_os():
 
 def os_mais_produtos():
     query = "SELECT * FROM Ordem_servico WHERE qtd_produto = (SELECT MAX(qtd_produto) FROM Ordem_servico);"
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    return query_result
+
+def media_produtos():
+    query = "SELECT AVG(qtd_produto) AS Media FROM Ordem_servico;"
     cursor.execute(query)
     query_result = cursor.fetchall()
     return query_result
@@ -368,8 +374,8 @@ else:
         if op_filter == "Ver todos":
             data = select_end()
             st.write("Endereços:")
-            df = pd.DataFrame(data, columns=["ID", "Cidade", "Número", "Rua", "Estado", "Bairro"])
-            st.dataframe(df.set_index('ID'), width=800)
+            df = pd.DataFrame(data, columns=["ID da Ordem de Serviço", "Cidade", "Número", "Rua", "Estado", "Bairro"])
+            st.dataframe(df.set_index('ID da Ordem de Serviço'), width=800)
         elif op_filter == "ID da Ordem de Serviço":
             id_os = st.number_input("ID da Ordem de Serviço", value=1, format="%d")
             data = select_end_id(id_os)
@@ -393,7 +399,7 @@ else:
         st.subheader("Apagar Ordem de Serviço")
         id_os = st.number_input("ID da Ordem de Serviço que deseja apagar", value=1, format="%d")
         if st.button("Apagar"):
-            delete_eq(id_os)
+            delete_os(id_os)
 
 
     if operation == "Atualizar Material(is)":
@@ -405,7 +411,7 @@ else:
         
     if operation == "Visualizar Relatórios":
         st.subheader("Visualizar Relatórios")
-        op_filter = st.sidebar.selectbox("Tipo", ("Mês com mais Ordens de Serviço", "Ordem(ns) de Serviço com maior quantidade de produtos"))
+        op_filter = st.sidebar.selectbox("Tipo", ("Mês com mais Ordens de Serviço", "Ordem(ns) de Serviço com maior quantidade de produtos", "Média total de produtos das ordens de serviço"))
         if op_filter == "Mês com mais Ordens de Serviço":
             data = mes_mais_os()
             st.write("Ano, Mês e Total de Ordens de Serviço:")
@@ -416,9 +422,12 @@ else:
             st.write("Ordens de Serviço com maior quantidade de produtos:")
             df = pd.DataFrame(data, columns=["ID", "Cliente", "Funcionário Emissor", "Produto", "Quantidade dos produtos", "Data da consulta", "Data da emissão"])
             st.dataframe(df.set_index('ID'), width=800)
+        elif op_filter == "Média total de produtos das ordens de serviço":
+            query_result = media_produtos()
+            st.write("Média total de produtos das ordens de serviço:")
+            df = pd.DataFrame(query_result, columns=["Média"])
+            st.dataframe(df, width=800)
+
 
 cursor.close()
 conn.close()
-
-# if __name__ == '__main__':
-#     app()
